@@ -1,0 +1,133 @@
+package Steps;
+
+import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Random;
+import org.json.JSONObject;
+import org.junit.Assert;
+import com.google.gson.Gson;
+import cucumber.api.java.en.Given;
+import cucumber.api.java.en.When;
+import io.restassured.http.ContentType;
+import io.restassured.response.Response;
+import net.serenitybdd.rest.SerenityRest;
+import net.thucydides.core.annotations.Step;
+import net.thucydides.core.annotations.Steps;
+
+public class CreditAdjustment {
+		
+	public Map<String, Object> credits									=				new LinkedHashMap<String, Object>();
+	Date date 														 	=				new Date();  
+	Gson gson															=				new Gson();
+	public static String creditObject;
+	public static Response response_Credit, response_userReport;
+	public static JSONObject responseJsonCredit, userInfo;
+	
+	
+	public class creditSteps{
+		
+		Random rand													=				 	new Random();
+		int Low 													=				 	1;
+		int High 													=				 	190;
+		double Result 													=				 	rand.nextInt(High-Low) + Low;
+		
+		
+		@Step
+		public void createAObjectForCreditAdjustment(){
+			
+
+
+						
+			credits.put("uniquePin", CreateProfileStepDefinition.accountPin);
+			credits.put("brandId", CreateProfileStepDefinition.getBrandId.get("brandId"));
+			credits.put("creditAmount", Result);
+			credits.put("approvedBy", "Abinaya");
+			credits.put("reason", "Testing the credit adjustment");
+			credits.put("description", "Testing the credit functionality, it for the owing balance adjustment");
+			credits.put("processDate", date.getTime());
+			credits.put("taskId", "");
+			
+			if(!credits.isEmpty()){
+				
+				creditObject											=								gson.toJson(credits, LinkedHashMap.class);
+				
+			}
+		}
+		
+		
+		@Step
+		public void callTheCreditAdjustmentService(){
+			
+			response_Credit												=									SerenityRest.given()
+																													.when()
+																													.content(creditObject)
+																													.accept(ContentType.JSON)
+																													.contentType(ContentType.JSON)
+																													.post("/v1/creditAdjustmentQueue");
+		}
+		
+		@Step
+		public void assertTheResponseCodeAndValidateTheResponseBody(){
+			
+			Assert.assertEquals("Not getting the proper response status code", 200, response_Credit.getStatusCode());
+			
+		}
+		
+		@Step
+		public void callTheUserReportServiceToCheckTheCreditNotes(){
+			
+			response_userReport										=									SerenityRest.given()
+																											.when()
+																											.accept(ContentType.JSON)
+																											.contentType(ContentType.JSON)
+																											.get("/userReport/"+ CreateProfileStepDefinition.accountPin +"");
+			
+			
+			
+			responseJsonCredit										=									new JSONObject(response_userReport.asString());
+			
+			Assert.assertEquals("Having a problem in user report service", true, responseJsonCredit.get("success"));
+			
+			userInfo												=									(JSONObject) responseJsonCredit.get("userInfo");
+			
+			System.out.println("Credit Amount: " + Result);
+			System.out.println("Asserting credit amount from the object:  "+userInfo.get("credit"));
+			
+			Assert.assertEquals("Have to check the credit notes in user reports", Result, userInfo.get("credit"));				
+		}
+		
+	}
+	
+	@Steps
+	creditSteps credit;
+	
+	@Given("^Get the proper data to process the credit$")
+	public void get_the_proper_data_to_process_the_credit() throws Exception {
+		
+		credit.createAObjectForCreditAdjustment();
+	   
+	}
+
+	@Given("^call the credit adjustment service$")
+	public void call_the_credit_adjustment_service() throws Exception {
+	   
+		credit.callTheCreditAdjustmentService();
+		
+	}
+
+	@When("^validate statuscode and response$")
+	public void validate_statuscode_and_response() throws Exception {
+	   
+		credit.assertTheResponseCodeAndValidateTheResponseBody();
+	}
+
+	@When("^check the owing balance, in the case of if credit amount is less than or equal to two hundred$")
+	public void check_the_owing_balance_in_the_case_of_if_credit_amount_is_less_than_or_equal_to_two_hundred() throws Exception {
+	    
+		credit.callTheUserReportServiceToCheckTheCreditNotes();
+	}
+
+
+
+}

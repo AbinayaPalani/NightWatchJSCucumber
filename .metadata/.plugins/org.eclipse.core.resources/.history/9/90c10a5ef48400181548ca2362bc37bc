@@ -1,0 +1,161 @@
+package Steps;
+
+import java.util.GregorianCalendar;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Random;
+
+import com.google.gson.Gson;
+
+import cucumber.api.java.en.Given;
+import cucumber.api.java.en.Then;
+import cucumber.api.java.en.When;
+import net.thucydides.core.annotations.Step;
+import net.thucydides.core.annotations.Steps;
+
+public class updatePaymentInstrument {
+	
+	
+	Map<String, Object> updatePIObject 			=			new LinkedHashMap<String, Object>();
+	Map<String, Object> updatePIPaymentDetails	=			new LinkedHashMap<String, Object>();
+	public static String[] cardNumber = {"378282246310005", "371449635398431",
+			"36259600000004", "6011111111111117", "3530111333300000", "6304000000000000",
+			"5555555555554444", "2223000048400011", "4111111111111111", "4005519200000004",
+			"4009348888881881", "4012000033330026", "4012000077777777", "4012888888881881",
+			"4217651111111119", "4500600000000061"
+			};
+
+	public static String[] bankAccountType 		= 			{"Checking", "Savings"};
+	
+	public static String[] accountNumber		= 			{"021000021", "011401533", "091000019"};
+	
+	Gson gson 									=					new Gson();
+	
+	public int randBetween(int start, int end) {
+        return start + (int)Math.round(Math.random() * (end - start));
+    }
+
+	
+	public class updatePaymnetInstrumentSteps{
+		
+		
+		@Step
+		public void getOwingBalanceDetails(String paymentType, String amount){
+			
+			Random rand = new Random();
+			
+			int cardNum = rand.nextInt(cardNumber.length-1) + 1;
+			
+			int bankAccntType = rand.nextInt(bankAccountType.length-1) + 1;
+			
+			int accountNum = rand.nextInt(accountNumber.length-1) + 1;
+			
+			
+			GregorianCalendar gc = new GregorianCalendar();
+
+	        int year = randBetween(1950, 2018);
+
+	        gc.set(gc.YEAR, year);
+
+	        int dayOfYear = randBetween(1, gc.getActualMaximum(gc.DAY_OF_YEAR));
+
+	        gc.set(gc.DAY_OF_YEAR, dayOfYear);
+
+			
+			updatePIObject.put("accountPin", CreateProfileStepDefinition.accountPin);
+			updatePIObject.put("brandId", CreateProfileStepDefinition.getBrandId.get("brandId"));
+			updatePIObject.put("paymentType", paymentType);
+			
+			//updatePIObject.put("deletePIID", userData.updatePIDeletePIId.get(index));
+			
+				updatePIObject.put("amount", amount);
+				
+				if(paymentType.equalsIgnoreCase("cc")){
+					updatePIPaymentDetails.put("nameOnCard", "Abinaya");
+					updatePIPaymentDetails.put("cardNumber", cardNumber[cardNum]);
+					updatePIPaymentDetails.put("expDate", gc.get(gc.DAY_OF_MONTH)+"/"+gc.get(gc.YEAR));
+				}
+				if(paymentType.equalsIgnoreCase("ach")){
+					updatePIPaymentDetails.put("routingNumber", accountNumber[accountNum]);
+					updatePIPaymentDetails.put("bankAccountNumber", "3434322");
+					updatePIPaymentDetails.put("customerName", "Abinaya");
+				}
+				updatePIPaymentDetails.put("firstName", "Abinaya");
+				updatePIPaymentDetails.put("lastName", "Palani");
+				updatePIPaymentDetails.put("address1", "1034 SE Street");
+				updatePIPaymentDetails.put("address2", "GherkinLangugae station");
+				updatePIPaymentDetails.put("country", "US");
+				updatePIPaymentDetails.put("city", "Portland");
+				updatePIPaymentDetails.put("state", "Oregon");
+				updatePIPaymentDetails.put("zip", "948331");
+				
+				updatePIObject.put("paymentDetails", updatePIPaymentDetails);
+				
+		
+		}
+		
+		
+	}
+
+	
+	
+	@Steps
+	updatePaymnetInstrumentSteps updatePIStep;
+	
+	@Given("^Get the Owing Balance of the customer$")
+	public void get_the_Owing_Balance_of_the_customer() throws Exception {
+	    
+		
+	}
+
+
+	@Given("^Get the proper data then call the updatePaymentInstrument service to update and make a payment \\$\"([^\"]*)\" and Payment Type as \"([^\"]*)\"$")
+	public void get_the_proper_data_then_call_the_updatePaymentInstrument_service_to_update_and_make_a_payment_$_and_Payment_Type_as(String arg1, String arg2) throws Exception {
+	    
+		updatePIStep.getOwingBalanceDetails(paymentType, amount);
+	}
+
+	@When("^check the response code and validate the response$")
+	public void check_the_response_code_and_validate_the_response() throws Exception {
+	    
+	}
+
+	@When("^once updated  and proccess the payment successfully and check the owing balance of the customer as per process payment$")
+	public void once_updated_and_proccess_the_payment_successfully_and_check_the_owing_balance_of_the_customer_as_per_process_payment() throws Exception {
+	   
+	}
+
+	@Given("^Get the proper data then call the service to update the payment details, payment type as \"([^\"]*)\"$")
+	public void get_the_proper_data_then_call_the_service_to_update_the_payment_details_payment_type_as(String arg1) throws Exception {
+	   
+	}
+
+	@Then("^check the response status code then validate the response body$")
+	public void check_the_response_status_code_then_validate_the_response_body() throws Exception {
+	   
+	}
+
+	@Then("^Once payment details get updated and then check the relevant get service$")
+	public void once_payment_details_get_updated_and_then_check_the_relevant_get_service() throws Exception {
+	    
+	}
+
+	@Given("^Get the proper data$")
+	public void get_the_proper_data() throws Exception {
+	  
+	}
+
+	@When("^call update payment instrument service$")
+	public void call_update_payment_instrument_service() throws Exception {
+	    
+	}
+
+	@When("^call the updatepaymentinstrumentwithprocesspayment service$")
+	public void call_the_updatepaymentinstrumentwithprocesspayment_service() throws Exception {
+	   
+	}
+
+
+
+
+}

@@ -1,0 +1,33 @@
+Feature: Update the payment details
+  I need to update the Payment Details to the customer
+
+  @updatePIWithProcessPayment
+  Scenario Outline: Testing a update the payment instrument and process the payment, with the requestBody of PUT EndPoint
+    Given Get the Owing Balance of the customer
+    Given Get the proper data
+    And call the updatePaymentInstrument service to update and make a payment $"<Amount>" and Payment Type as <type>
+    When check the response code and validate the response
+    And once updated  and proccess the payment successfully and check the owing balance of the customer as per process payment
+    
+    
+    Examples: 
+      | type | Amount |
+      | cc   |      5 |
+      | cc   |      7 |
+    
+
+  @updatePIWithoutPayment
+  Scenario Outline: Testing a update the payment instrument, with the requestBody of PUT EndPoint
+    Given Get the proper data
+    When call the service to update the payment details, payment type as <type>
+    Then check the response status code then validate the response body
+    And Once payment details get updated and then check the relevant get service
+
+    Examples: 
+      | type |
+      | cc   |  
+      | cc   | 
+      
+      
+      @LiveUpdatePaymentInstrument
+      Scenario: Testing a update payment instrument with 

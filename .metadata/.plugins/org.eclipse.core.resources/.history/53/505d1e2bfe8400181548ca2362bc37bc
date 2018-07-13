@@ -1,0 +1,231 @@
+package Steps;
+
+import java.util.GregorianCalendar;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Random;
+import static org.hamcrest.Matchers.is;
+
+import org.assertj.core.api.SoftAssertions;
+import org.json.JSONObject;
+import org.junit.Assert;
+
+import com.google.gson.Gson;
+
+import cucumber.api.java.en.Given;
+import cucumber.api.java.en.Then;
+import cucumber.api.java.en.When;
+import io.restassured.RestAssured;
+import io.restassured.http.ContentType;
+import io.restassured.response.Response;
+import net.serenitybdd.rest.SerenityRest;
+import net.thucydides.core.annotations.Step;
+import net.thucydides.core.annotations.Steps;
+
+public class OneTimeProcessPayment {
+	
+	public Map<String, Object> processPayment							=					new LinkedHashMap<String, Object>();
+	public Map<String, Object> paymentTypeObject						=					new LinkedHashMap<String, Object>();
+	public Map<String, Object> paymentAddressDetails					=					new LinkedHashMap<String, Object>();
+	public static String[] cardNumber = {"378282246310005", "371449635398431",
+											"36259600000004", "6011111111111117", "3530111333300000", "6304000000000000",
+											"5555555555554444", "2223000048400011", "4111111111111111", "4005519200000004",
+											"4009348888881881", "4012000033330026", "4012000077777777", "4012888888881881",
+											"4217651111111119", "4500600000000061"
+											};
+	
+	public static String RequestJson_ProcessPayment, owingBalance;
+	
+	Gson gson 															=					new Gson();
+	
+	public static String[] bankAccountType = {"Checking", "Savings"};
+	
+	public static String[] accountNumber = {"021000021", "011401533", "091000019"};
+	
+	public static Response getOwingBalance, response_processPayment, response_getPayments, response_owingBalance;
+	
+
+	public int randBetween(int start, int end) {
+        return start + (int)Math.round(Math.random() * (end - start));
+    }
+
+	
+	public class processPaymentSteps{
+		
+		
+
+		@Step
+		public void getLatestOwingBalance(){
+			
+			getOwingBalance											=								SerenityRest.given()
+																											.when()
+																											.pathParam("accountPin", "54713069-3287-4850-b62b-299268cff02b")
+																											.pathParam("brandId", "5a6e67a6-8bfd-45f5-a774-3462cb0c4e4c")
+																											.contentType(ContentType.JSON)
+																											.accept(ContentType.JSON)
+																											.get("/getLatestInvoiceDetails/accountPin/{accountPin}/brandId/{brandId}");
+			
+			JSONObject responseLatestDueBalance						=								new JSONObject(getOwingBalance.asString());
+			
+			System.out.println(responseLatestDueBalance);
+			
+			JSONObject data 										=								responseLatestDueBalance.getJSONObject("data");
+			
+			owingBalance                                            =								data.get("Total Due").toString();
+			
+		}
+		
+		@Step
+		public void gettingTheProperDataToMakeTheProcessPayment(String paymentType, String amount){
+			
+			Random rand = new Random();
+			
+			int cardNum = rand.nextInt(cardNumber.length-1) + 1;
+			
+			int bankAccntType = rand.nextInt(bankAccountType.length-1) + 1;
+			
+			int accountNum = rand.nextInt(accountNumber.length-1) + 1;
+			
+			
+			GregorianCalendar gc = new GregorianCalendar();
+
+	        int year = randBetween(1950, 2018);
+
+	        gc.set(gc.YEAR, year);
+
+	        int dayOfYear = randBetween(1, gc.getActualMaximum(gc.DAY_OF_YEAR));
+
+	        gc.set(gc.DAY_OF_YEAR, dayOfYear);
+
+
+			processPayment.put("accountPin", CreateProfileStepDefinition.accountPin);
+			processPayment.put("brandId", CreateProfileStepDefinition.getBrandId.get("brandId"));
+			//processPayment.put("instrumentId", "");
+			
+			processPayment.put("paymentType", paymentType);
+			
+			if(RestAssured.baseURI.equals("https://access.jbilling.a-cti.com") || RestAssured.baseURI.equals("http://access.jbilling.a-cti.com")){
+			
+			//	processPayment.put("paymentType", paymentType);
+				
+			}
+			processPayment.put("paymentAmount", amount);
+			
+			
+			if(paymentType.equals("cc")){
+				
+				 System.out.println(gc.get(gc.YEAR) + gc.get(gc.DAY_OF_MONTH));
+				paymentTypeObject.put("nameOnCard","Abinaya");
+				paymentTypeObject.put("cardNumber", cardNumber[cardNum]);
+				paymentTypeObject.put("expDate", (gc.get(gc.MONTH)+1)+"/"+gc.get(gc.YEAR));
+			}
+			if(paymentType.equals("ach")){
+				paymentTypeObject.put("routingNumber", accountNumber[accountNum]);
+				paymentTypeObject.put("bankAccountNumber", "378748322");
+				paymentTypeObject.put("customerName", "Abinaya");
+				paymentTypeObject.put("bankAccountType", bankAccountType[bankAccntType]);
+			}
+			processPayment.put("paymentDetails", paymentTypeObject);
+			paymentAddressDetails.put("firstName", "Abinaya");
+			paymentAddressDetails.put("lastName", "test");
+			paymentAddressDetails.put("address", "1033 SE Street ");
+			paymentAddressDetails.put("address2", "angular colony");
+			paymentAddressDetails.put("country", "US");
+			paymentAddressDetails.put("city", "Portland");
+			paymentAddressDetails.put("state", "Oregon");
+			paymentAddressDetails.put("zip", "941211");
+			processPayment.put("addressDetails", paymentAddressDetails);
+			
+			if(!processPayment.isEmpty()){
+				
+				RequestJson_ProcessPayment 								= 						gson.toJson(processPayment, LinkedHashMap.class);	
+			}
+			
+			System.out.println(RequestJson_ProcessPayment);
+			
+			response_processPayment										=						SerenityRest.given()
+																										.when()
+																										.body(RequestJson_ProcessPayment)
+																										.accept(ContentType.JSON)
+																										.contentType(ContentType.JSON)
+																										.post("/processPayment");
+			
+			System.out.println(response_processPayment.asString());
+			
+		}
+
+		@Step
+		public void validateTheResponseCodeAndResponseInformation(){
+			
+			SoftAssertions softly = new SoftAssertions();
+		
+			Assert.assertEquals("Not getting the proper status code, please check the service",200, response_processPayment.getStatusCode());
+			
+			JSONObject responsePaymentDetails							=						new JSONObject(response_processPayment.asString());
+			
+			softly.assertThat(responsePaymentDetails.get("success").equals(true));
+	
+			softly.assertAll();
+			
+		}
+		
+		@Step
+		public void checkTheOwingBalance(){
+			
+			
+			
+			response_getPayments										=					SerenityRest.given()
+																									.when()
+																									.accept(ContentType.JSON)
+																									.contentType(ContentType.JSON)
+																									.get("/getPayments/"+CreateProfileStepDefinition.accountPin);
+			
+
+			
+		}
+		
+		@Step
+		public void owingBalance(){
+			response_owingBalance										=					SerenityRest.given()
+																								.when()
+																								.pathParam("accountPin", CreateProfileStepDefinition.accountPin)
+																								.pathParam("brandId", "5a6e67a6-8bfd-45f5-a774-3462cb0c4e4c")
+																								.contentType(ContentType.JSON)
+																								.accept(ContentType.JSON)
+																								.get("/getLatestInvoiceDetails/accountPin/{accountPin}/brandId/{brandId}");
+
+
+		}
+		
+	}
+	
+	@Steps
+	processPaymentSteps paymentStep;
+	
+	@Given("^Before to make the process need to check the getLatestInvoiceDetails of payment amount$")
+	public void before_to_make_the_process_need_to_check_the_getLatestInvoiceDetails_of_payment_amount() throws Exception {
+		
+		paymentStep.getLatestOwingBalance();
+	}
+
+
+	@Given("^Get the proper data and then call the process payment service with \"([^\"]*)\" and amount \\$\"([^\"]*)\"$")
+	public void get_the_proper_data_and_then_call_the_process_payment_service_with_and_amount_$(String arg1, String arg2) throws Exception {
+		
+		paymentStep.gettingTheProperDataToMakeTheProcessPayment(arg1, arg2);
+	}
+
+	@When("^Assert the StatusCode and response$")
+	public void assert_the_StatusCode_and_response() throws Exception {
+		paymentStep.validateTheResponseCodeAndResponseInformation();
+	}
+
+	@Then("^Check the relevant get service data whether successful payment details bind to the user or not and validate it$")
+	public void check_the_relevant_get_service_data_whether_successful_payment_details_bind_to_the_user_or_not_and_validate_it() throws Exception {
+		paymentStep.checkTheOwingBalance();
+		paymentStep.owingBalance();
+	}
+
+
+
+}

@@ -1,0 +1,312 @@
+package Steps;
+
+import static org.hamcrest.Matchers.is;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Random;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.junit.Assert;
+
+import com.google.gson.Gson;
+
+import cucumber.api.java.en.Given;
+import cucumber.api.java.en.Then;
+import cucumber.api.java.en.When;
+import io.restassured.http.ContentType;
+import io.restassured.response.Response;
+import net.serenitybdd.rest.SerenityRest;
+import net.thucydides.core.annotations.Step;
+import net.thucydides.core.annotations.Steps;
+
+public class AssoicateAsset {
+	
+	
+	public static Response response_assoicate, response_freeAsset, RespAssetDetails, response_getOrderByUserId, response_mappingAsset;
+	public static JSONArray assets;
+	public static JSONObject assetObj1, assetObj2;
+	public static String AssetId1, AssetValue1, AssetId2, AssetValue2, AssetObjectData, AssertionAsset;
+	public static Long[] assetValues, assetIds;
+	public Map<String, Object> SynAsset									=					new LinkedHashMap<String, Object>();
+	public Map<String, Object> ChangeAssetPrice							=					new LinkedHashMap<String, Object>();
+	Gson gson 															=					new Gson();
+
+	
+	public class associateAssetSteps{
+		
+		
+		@Step
+		public void getFreeableDataFromTheGetService(){
+			
+			response_freeAsset										=							SerenityRest.given().when()
+																									.contentType(ContentType.JSON)
+																									.queryParam("brandId", CreateProfileStepDefinition.getBrandId.get("brandId").toString())
+																									.queryParam("type", "8xx")
+																									.queryParam("limit", "10")
+																									.accept(ContentType.JSON)
+																									.get("/getAvailableAsset");
+			
+
+			
+			assets 													= 						 new JSONArray(response_freeAsset.asString());
+			
+			Random rand1											=						 new Random();
+			
+			int assetNum1 											=						 rand1.nextInt(assets.length()-1) + 1;
+			
+			assetObj1 												=						 assets.getJSONObject(assetNum1);
+			
+			System.out.println(assetObj1);
+			
+			AssetId1 												=						String.valueOf(assetObj1.get("assetId"));
+			
+			AssetValue1												=						String.valueOf(assetObj1.get("assetValue"));
+			
+			Random rand2											=						new Random();
+			
+			int assetNum2											=						 rand2.nextInt(assets.length()-1) + 1;
+			
+			assetObj2 												=						 assets.getJSONObject(assetNum2);
+			
+			System.out.println(assetObj2);
+			
+			AssetId2 												=						String.valueOf(assetObj1.get("assetId"));
+			
+			AssetValue2												=						String.valueOf(assetObj1.get("assetValue"));
+			
+			
+			assetValues												= 						new Long[]{Long.valueOf(AssetValue1), Long.valueOf(AssetValue2)};
+			
+			assetIds												=						new Long[]{Long.valueOf(AssetId1), Long.valueOf(AssetId2)};
+			
+			for(int assetValuesIndex = 0; assetValuesIndex < assetValues.length; assetValuesIndex++){
+			
+				RespAssetDetails 										=						SerenityRest.given()
+																									.accept(ContentType.JSON)
+																									.contentType(ContentType.JSON)
+																									.queryParam("assetValue", assetValues[assetValuesIndex])
+																									.get("/getAvailableInfoByAsset");
+
+			}	
+		}
+		
+		@Step
+		public void callTheServiceAssociateAssetWithUniquePinAndValidateTheResponse(){
+			
+			
+			
+			
+			for(int indexAssetValue = 0; indexAssetValue < assetValues.length ; indexAssetValue++){
+				
+				
+					SynAsset.put("assetId", assetIds[indexAssetValue]);
+					SynAsset.put("uniquePin", CreateProfileStepDefinition.accountPin);
+					SynAsset.put("brandId", CreateProfileStepDefinition.getBrandId.get("brandId").toString());
+					SynAsset.put("isMapAsset", true);
+				
+	
+			
+			
+					response_assoicate									=					SerenityRest.given()
+																								.when()
+																								.body(SynAsset)
+																								.contentType(ContentType.JSON)
+																								.accept(ContentType.JSON)
+																								.post("/associateAssetWithUniquePin");		
+			
+			
+					Assert.assertEquals("Check the status code having some problem in it",200,response_assoicate.getStatusCode());
+					
+					
+					
+					
+			}
+		 
+		
+		}
+		
+		@Step
+		public void checkReleventGetServiceWhetherAssetGetMappedToTheCustomer(){
+			
+			
+			response_getOrderByUserId									=				SerenityRest.given()
+																							.when()
+																							.contentType(ContentType.JSON)
+																							.accept(ContentType.JSON)
+																							.queryParam("brandId", CreateProfileStepDefinition.getBrandId.get("brandId").toString())
+																							.queryParam("userId", CreateProfileStepDefinition.resJson_createUser.get("userId"))
+																							.get("/getOrdersByUserId");
+			
+			JSONObject orderObject										=				new JSONObject(response_getOrderByUserId.asString());
+			
+			Assert.assertEquals("success", orderObject.get("status"));
+			
+
+			JSONObject responseOrderData = new JSONObject(response_getOrderByUserId.asString());
+			
+			JSONArray order = (JSONArray) responseOrderData.get("order");
+			
+			System.out.println(order.get(0));
+			
+			JSONObject orderlines = (JSONObject) order.get(0);
+			
+			JSONArray orderlineObj = (JSONArray) orderlines.get("orderLines");
+			
+			System.out.println(orderlineObj.length());
+			
+//			for(int i = orderlineObj.length()-1 ; i <=0; i--){
+//				
+//				System.out.println(orderlineObj.get(i));
+//				
+//				JSONObject obj = orderlineObj.getJSONObject(i);
+//				
+//				System.out.println(obj.get("name"));
+//				
+//				
+//				Assert.assertEquals("Its not mapped to that user "+CreateProfileStepDefinition.userId+"", assetValues[i], obj.get("name"));
+//			}
+		
+		}
+		
+		@Step
+		public void callTheMapAssetWithDynamicPrice(){
+			
+			
+			AssertionAsset								=				String.valueOf(assetValues[0]);		
+				
+				ChangeAssetPrice.put("accountPin", CreateProfileStepDefinition.accountPin);
+				ChangeAssetPrice.put("productId", "603");
+				ChangeAssetPrice.put("assetValue", AssertionAsset);
+				ChangeAssetPrice.put("price", 10);
+				ChangeAssetPrice.put("brandId", CreateProfileStepDefinition.getBrandId.get("brandId").toString());
+			
+				if(!ChangeAssetPrice.isEmpty()){
+					
+					AssetObjectData										=								gson.toJson(ChangeAssetPrice, LinkedHashMap.class);
+					
+				}
+			
+			
+			
+			response_mappingAsset								=								SerenityRest.given().when()
+																										.body(ChangeAssetPrice)
+																										.accept(ContentType.JSON)
+																										.contentType(ContentType.JSON)
+																										.post("/mapAssetWithAccountPin/billing/v1");
+		}
+		
+		@Step
+		public void assertResponseCodeAndResponseStatus(){
+			
+			Assert.assertEquals(200, response_mappingAsset.getStatusCode());
+			
+			JSONObject responseDynamicAsset							=						new JSONObject(response_mappingAsset.asString());
+			
+			Assert.assertEquals( true, responseDynamicAsset.get("status"));
+	
+		}
+	
+		@Step
+		public void validateTheDataWithGetService(){
+			
+			
+			response_getOrderByUserId									=				SerenityRest.given()
+																								.when()
+																								.contentType(ContentType.JSON)
+																								.accept(ContentType.JSON)
+																								.queryParam("brandId", CreateProfileStepDefinition.getBrandId.get("brandId").toString())
+																								.queryParam("userId", CreateProfileStepDefinition.resJson_createUser.get("userId"))
+																								.get("/getOrdersByUserId");
+
+				JSONObject orderObject										=				new JSONObject(response_getOrderByUserId.asString());
+				
+				Assert.assertEquals("success", orderObject.get("status"));
+				
+				
+				JSONObject responseOrderData = new JSONObject(response_getOrderByUserId.asString());
+				
+				JSONArray order = (JSONArray) responseOrderData.get("order");
+				
+				System.out.println(order.get(0));
+				
+				JSONObject orderlines = (JSONObject) order.get(0);
+				
+				JSONArray orderlineObj = (JSONArray) orderlines.get("orderLines");
+				
+				System.out.println(orderlineObj.length());
+				
+				for(int i = orderlineObj.length()-1 ; i <=0; i--){
+				
+					System.out.println(orderlineObj.get(i));
+				
+					JSONObject obj = orderlineObj.getJSONObject(i);
+				
+					System.out.println(obj.get("name"));
+					
+					if(AssertionAsset.equals(obj.get("name"))){
+				
+				
+						Assert.assertEquals("Its not mapped to that user "+CreateProfileStepDefinition.userId+"", AssertionAsset, obj.get("name"));
+						
+						break;
+					}
+				}
+			
+		}
+		
+		
+		
+	}
+
+
+	@Steps
+	associateAssetSteps associateAsset;
+	
+	@Given("^get the available asset data$")
+	public void get_the_available_asset_data() throws Exception {
+
+		associateAsset.getFreeableDataFromTheGetService();
+	}
+
+	@When("^call the associate asset with user and validate the response$")
+	public void call_the_associate_asset_with_user_and_validate_the_response() throws Exception {
+	   
+		associateAsset.callTheServiceAssociateAssetWithUniquePinAndValidateTheResponse();
+	}
+
+
+
+	@Then("^successfully mapped to the customer then check through the get service$")
+	public void successfully_mapped_to_the_customer_then_check_through_the_get_service() throws Exception {
+		
+		associateAsset.checkReleventGetServiceWhetherAssetGetMappedToTheCustomer();
+		
+	}
+
+	@Given("^call the change asset price service$")
+	public void call_the_change_asset_price_service() throws Exception {
+		
+		associateAsset.callTheMapAssetWithDynamicPrice();
+	}
+
+	@Then("^verify the response of statusCode and validate the response Body$")
+	public void verify_the_response_of_statusCode_and_validate_the_response_Body() throws Exception {
+		
+		associateAsset.assertResponseCodeAndResponseStatus();
+	}
+
+	@Then("^once it successfully mapped, then check the data in get service$")
+	public void once_it_successfully_mapped_then_check_the_data_in_get_service() throws Exception {
+		
+		associateAsset.validateTheDataWithGetService();
+		
+	}
+
+
+	
+
+	
+
+}

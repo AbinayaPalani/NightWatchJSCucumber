@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuites errors="1"
+            failures="0"
+            tests="1">
+
+  <testsuite name="demo"
+    errors="1" failures="0" hostname="" id="" package="demo" skipped="0"
+    tests="1" time="0.003000" timestamp="Fri, 15 Jun 2018 14:38:57 GMT">
+  
+    <testcase name="Demo test Google" classname="demo" time="0.003000" assertions="0">
+    </testcase>
+  
+
+  
+    <system-err>
+        Error while running [Demo / Demo test Google]:
+
+  TypeError: client.url is not a function
+    at Object.Demo test Google (/Users/abinaya/Documents/NightWatch/Automation/tests/demo.js:4:8)
+    at Object.&lt;anonymous&gt; (/Users/abinaya/Documents/NightWatch/Automation/node_modules/nightwatch/lib/util/utils.js:35:8)
+    at Module.callAsync (/Users/abinaya/Documents/NightWatch/Automation/node_modules/nightwatch/lib/runner/module.js:75:18)
+    at /Users/abinaya/Documents/NightWatch/Automation/node_modules/nightwatch/lib/runner/testcase.js:77:43
+    at _fulfilled (/Users/abinaya/Documents/NightWatch/Automation/node_modules/q/q.js:834:54)
+    at self.promiseDispatch.done (/Users/abinaya/Documents/NightWatch/Automation/node_modules/q/q.js:863:30)
+    at Promise.promise.promiseDispatch (/Users/abinaya/Documents/NightWatch/Automation/node_modules/q/q.js:796:13)
+    at /Users/abinaya/Documents/NightWatch/Automation/node_modules/q/q.js:556:49
+    at runSingle (/Users/abinaya/Documents/NightWatch/Automation/node_modules/q/q.js:137:13)
+    at flush (/Users/abinaya/Documents/NightWatch/Automation/node_modules/q/q.js:125:13)
+    </system-err>
+  
+
+  
+  </testsuite>
+</testsuites>

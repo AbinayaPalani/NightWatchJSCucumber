@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuites errors="0"
+            failures="0"
+            tests="2">
+
+  <testsuite name="adminToolAction"
+    errors="0" failures="0" hostname="" id="" package="adminToolAction" skipped="0"
+    tests="2" time="17.83" timestamp="Mon, 09 Jul 2018 13:19:27 GMT">
+  
+    <testcase name="click the credit function and process the credit to the user" classname="adminToolAction" time="10.26" assertions="2">
+
+    
+
+    
+    </testcase>
+  
+    <testcase name="click the debit section and process the debit to the customer" classname="adminToolAction" time="7.569" assertions="1">
+
+    
+    </testcase>
+  
+
+  
+
+  
+  </testsuite>
+</testsuites>

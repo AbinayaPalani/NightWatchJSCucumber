@@ -1,0 +1,20 @@
+{
+  "name": "automation",
+  "version": "1.0.0",
+  "description": "To learn the automation in js.",
+  "main": "nightwatch.js",
+  "scripts": {
+    "test": ""
+  },
+  "author": "Abinaya",
+  "license": "ISC",
+  "dependencies": {
+    "chromedriver": "^2.40.0",
+    "selenium-server-standalone": "^2.53.1",
+    "selenium-server-standalone-jar": "^3.12.0"
+  },
+  "devDependencies": {
+    "nightwatch": "^0.9.21",
+    "selenium-server": "^3.12.0"
+  }
+}

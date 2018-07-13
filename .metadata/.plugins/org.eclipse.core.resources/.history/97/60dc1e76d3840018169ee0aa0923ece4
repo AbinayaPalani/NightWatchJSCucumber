@@ -1,0 +1,19 @@
+Feature: Update the payment details
+  I need to update the Payment Details to the customer
+
+  @tag1
+  Scenario: Testing a update the payment instrument and process the payment , with the requestBody of POST EndPoint
+  	Given Get the Owing Balance of the customer
+    Given Get the proper data
+    And call the updatePaymentInstrument service to update and make a payment
+    When check the response code and validate the response
+    And once updated  and proccess the payment successfully and check the owing balance of the customer as per process payment
+    And yet another action
+    Then I validate the outcomes
+    And check more outcomes
+
+  @tag2
+  Scenario: Title of your scenario outline
+    Given I want to write a step with <name>
+    When I check for the <value> in step
+    Then I verify the <status> in step

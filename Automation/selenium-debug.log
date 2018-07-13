@@ -1,0 +1,4 @@
+18:28:40.696 INFO [GridLauncherV3.launch] - Selenium build info: version: '3.12.0', revision: '7c6e0b3'
+18:28:40.697 INFO [GridLauncherV3$1.launch] - Launching a standalone Selenium Server on port 9515
+2018-06-15 18:28:40.784:INFO::main: Logging initialized @370ms to org.seleniumhq.jetty9.util.log.StdErrLog
+18:28:41.026 INFO [SeleniumServer.boot] - Selenium Server is up and running on port 9515

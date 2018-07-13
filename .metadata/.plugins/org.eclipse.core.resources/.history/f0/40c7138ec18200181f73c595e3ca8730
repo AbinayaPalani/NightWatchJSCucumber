@@ -1,0 +1,30 @@
+Feature: One time process payment
+  I need to test the functionality of process payment
+
+ 
+
+  @oneTimeProcessPayment
+  Scenario Outline: Testing a one time process payment
+  	Given Before to make the process need to check the getLatestInvoiceDetails of payment amount
+    Given Get the proper data and then call the process payment service with <paymentType> and amount $<price>
+    When Assert the StatusCode and response
+    Then Check the relevant get service data whether successful payment details bind to the user or not and validate it
+
+    Examples: 
+      | paymentType  | price |
+      | cc |     5 | 
+      | cc |     7 |
+      | cc |     1000 |
+      | cc |     2040 |
+      | cc |     3030 |
+      | cc |     4001.99 |
+      | cc |     4002.80  |
+      | cc |     4008.50  |
+      | cc |     5001.00 |
+      | cc |     5001.02 |
+      | ach |     2 |
+      | ach |     7 |
+      | ach |     180 |
+      | ach |     500 |
+      | ach |     563 |
+      | cc |     5001.01 |
